@@ -14,7 +14,12 @@ if __name__== "__main__":
     get_ipython().system('jupyter-nbconvert --to script models.ipynb')
 
 
-# # Models
+# <h1 style="text-align:center;"><font size=7><b> Models </b></font></h1>
+# 
+# This document provides some convenient pre-defined lattice models that the user can use, either in 1D or 2D.
+
+# <h2><font size=6><b>Graphene ranoribbon</b></font></h2>
+# Define a graphene nanoribbon. The nanoribbon is oriented so that its wider borders are armchair. Each unit cell has 4 atoms
 
 # In[3]:
 
@@ -70,6 +75,9 @@ def set_graphene_nanoribbon(self, Lx, Ly, sample, dV, SCALE=3.5, calc=False, PBC
         self.diag_H0()
 
 
+# <h2><font size=6><b>1D tight-binding chain</b></font></h2>
+# This is implemented as a 2D square lattice with width $L_y=1$
+
 # In[4]:
 
 
@@ -103,6 +111,9 @@ def set_1DTB(self, Lx, sample, dV, SCALE=2.1):
     self.diag_H()
     self.diag_H0()
 
+
+# <h2><font size=6><b>Square lattice</b></font></h2>
+# 
 
 # In[5]:
 
@@ -154,6 +165,9 @@ def set_square(self, Lx, Ly, sample, dV, SCALE=4.5, calc=False, PBC=False):
         self.diag_H0()
 
 
+# <h2><font size=6><b>Square lattice 2nd neighbours</b></font></h2>
+# 
+
 # In[6]:
 
 
@@ -199,11 +213,8 @@ def set_square_2nd(self, Lx, Ly, sample, dV, SCALE=4.5, calc=False, PBC=False):
         self.diag_H0()
 
 
-# In[ ]:
-
-
-
-
+# <h2><font size=6><b>Other</b></font></h2>
+# 
 
 # In[ ]:
 

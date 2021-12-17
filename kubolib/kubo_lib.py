@@ -143,9 +143,15 @@ class kubo:
         if self.SCALE == -1:
             print("SCALE is not set")
         
+        # bonds without ramp
         self.bonds0.append(bond/self.SCALE)
         self.offsets0.append(offset)
         self.NB0 = len(self.bonds0)
+        
+        # bonds with ramp
+        self.bonds.append(bond/self.SCALE)
+        self.offsets.append(offset)
+        self.NB = len(self.bonds)
         
     def add_ramp_as_bonds(self):
         if not self.bonds0:
@@ -155,14 +161,21 @@ class kubo:
         if isinstance(self.ramp, int):
             print("ramp is not set")
         
-        self.bonds = self.bonds0.copy()
-        self.offsets = self.offsets0.copy()
+        # self.bonds = self.bonds0.copy()
+        # self.offsets = self.offsets0.copy()
         for oo in range(self.Norb):
             self.bonds.append(self.ramp[:,:,oo])
             self.offsets.append([0,0,oo,oo])
-        self.NB = len(self.bonds)
+        # self.NB = len(self.bonds)
     
-        
+    def calculate(self):
+        self.get_H0()
+        self.get_H()
+        self.get_V()
+
+        # Diagonalize the Hamiltonian matrices
+        self.diag_H()
+        self.diag_H0()
         
 
 
@@ -199,7 +212,7 @@ kubo.kubotime_random_kpm = kubotime_random_kpm
 kubo.kubotime_vector_kpm_v2 = kubotime_vector_kpm_v2
 kubo.kubotime_random_kpm_v2 = kubotime_random_kpm_v2
 
-# Models
+# Models (functions defined in models.py)
 kubo.set_graphene_nanoribbon = set_graphene_nanoribbon
 kubo.set_square = set_square
 kubo.set_square_2nd = set_square_2nd

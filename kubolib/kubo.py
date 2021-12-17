@@ -27,6 +27,14 @@ if __name__== "__main__":
 # 2. Act on the vectors instead<br>
 # Total time=NS\*(3N² + N)\*NT
 
+# # <font size=7><b>Matrix methods</b></font>
+# 
+# These methods are intended for testing purposes. The full matrices (Hamiltonian matrix, Fermi matrix, time evolution matrix) are calculated explicitly.
+# 
+# # <b>Matrix methods:</b> Average current
+# 
+# 
+
 # In[3]:
 
 
@@ -121,7 +129,9 @@ def kubotime_random(self, tlist, mu, NR, axis, flag):
     
 
 
-# # Time-resolved local current calculated across *one* bond
+# # <b>Matrix methods:</b> Local current
+# 
+# Time-resolved local current calculated across *one* bond
 # 
 # $$ \text{Tr}\left[J_{ij}e^{-iHt}f\left(H_{0}\right)e^{iHt}\right] $$
 # 
@@ -131,13 +141,12 @@ def kubotime_random(self, tlist, mu, NR, axis, flag):
 # 
 # Since $ J_{ij} $ is local in real space, it heavily restricts the trace, so that the sum only needs to be performed at $n=i$ and $n=j$
 
-# In[4]:
+# In[2]:
 
 
 def kubo_bond(self, tlist, mu, site_i, site_j, axis):
-    """ Computes the trace of the current operator across a bond, which is
-    defined from the site 'left' to the site 'right' 
-    Result is in units of e²/h
+    """ Computes the local current across a bond, from site_i to site_j, 
+    with explicit matrix computation. The result is in units of e²/h
     """
     
     tlistR = tlist*self.SCALE
@@ -197,13 +206,32 @@ def kubo_bond(self, tlist, mu, site_i, site_j, axis):
     return cond*2*np.pi
 
 
-# # KPM methods
+# # <font size=7><b> KPM methods </b></font>
+# 
+# # <b>KPM methods:</b> KPM auxiliary methods
+# 
+# KPM expansion of the Fermi function. The method <code>kpm_fermi(self, write, read, mu, Ncheb)</code> uses the non-perturbed Hamiltonian <code>H_0</code> stored in the object in bond form to evaluate the Fermi operator at a given chemical potential $\mu$. 
+# 
+# $$ f\left(\mu\right)=\frac{1}{1+e^{\beta\left(H_{0}-\mu\right)}}=\sum_{n=0}f_{n}\left(\mu\right)T_{n}\left(H_{0}\right) $$
+# 
+# KPM expansion of the time evolution operator using the full Hamiltonian <code>H</code> stored in the object in bond form. The method <code> kpm_time(self, write, read, dt, Ncheb) </code> acts on a vector 'read' with the time evolution operator of time increment <code>dt</code> and stores it in the vector 'write'
+# 
+# $$ e^{iHt/\hbar}=\sum_{n=0}U_{n}\left(t\right)T_{n}\left(H\right) $$
+# 
+# The method <code>kpm_time_inplace(self, vector, dt, Ncheb)</code> does the same thing but replaces the vector with the time-evolved vector by means of a temporary vector.
 
 # In[5]:
 
 
 def kpm_fermi(self, write, read, mu, Ncheb):
-    # Use the Hamiltonian without the ramp
+    # Calculates the action of the Fermi operator on a vector 'read' and
+    # stores it in the vector 'write'. The Fermi operator is calculated via a 
+    # Chebyshev expansion of the Heaviside step function (zero temperature). The
+    # Hamiltonian inside this operator is the unperturbed Hamiltonian H_0
+    # Parameters:
+    # mu: fermi energy
+    # Ncheb: number of Chebyshev polynomials
+    
     
     old = read*1.0
     new = read*0.0
@@ -246,7 +274,18 @@ def kpm_time_inplace(self, vector, dt, Ncheb):
     
 
 
-# In[6]:
+# # <b>KPM methods:</b> Average current
+# 
+# <code>kubotime_vector_kpm(self, tlist, mu, start, NchebF, NchebT, axis)</code> calculates one term of the full trace of the current operator (<i>not</i> the local current operator). This method is the numerical implementation of the formula
+# 
+# $$ \left\langle n\right|PJP e^{-iHt}f\left(H_{0}\right)e^{iHt}\left|n\right\rangle  $$
+# 
+# where $|n>$ is the <code>start</code> vector in the code<br>
+# 
+# The method <code>kubotime_random_kpm(self, tlist, mu, NR, NchebF, NchebT, axis, flag)</code> calls the previous method for a random vector defined only inside the sample. The <code>flag</code> parameter controls the type of random vector being fed into the previous method. <code>axis</code> controls the kind of velocity operator (x direction, y direction, or parallel to hopping direction)
+# 
+
+# In[4]:
 
 
 def kubotime_vector_kpm(self, tlist, mu, start, NchebF, NchebT, axis):
@@ -275,7 +314,7 @@ def kubotime_vector_kpm(self, tlist, mu, start, NchebF, NchebT, axis):
         conds[i] = np.sum(left.conjugate()*temp)
         
         # Evolve the vectors in time
-        kpm_time_inplace(self, left, dt, NchebT)
+        kpm_time_inplace(self,  left, dt, NchebT)
         kpm_time_inplace(self, right, dt, NchebT)
         
     return -conds*self.SCALE*np.pi*2
@@ -284,7 +323,13 @@ def kubotime_vector_kpm(self, tlist, mu, start, NchebF, NchebT, axis):
 
 
 def kubotime_random_kpm(self, tlist, mu, NR, NchebF, NchebT, axis, flag):
-    """ calculate the kubo formula using random vectors""" 
+    """ calculate the kubo formula using random vectors
+    flag controls the initial random vector:
+    0 is uniform in the unit complex circle
+    1 is the real part of 1 (MUCH smaller error bar)
+    2 is uniform with std_dev 1
+    """ 
+    
     NT = len(tlist)
     conds = np.zeros([NT,NR], dtype=complex)
     
@@ -314,7 +359,7 @@ def kubotime_random_kpm(self, tlist, mu, NR, NchebF, NchebT, axis, flag):
 # # KPM v2
 # doesn't work
 
-# In[7]:
+# In[5]:
 
 
 
@@ -386,10 +431,11 @@ def kubotime_random_kpm_v2(self, tlist, mu, NR, NchebF, NchebT, axis, flag):
                 
                 
     return conds
-    
 
 
-# # Average of whole current operator in PBC
+# # <font size=7><b>Velocity gauge</b></font>
+# 
+# # Implementation using the more modern Hamiltonian implementation
 
 # In[8]:
 

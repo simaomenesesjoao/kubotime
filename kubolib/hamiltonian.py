@@ -14,9 +14,22 @@ if __name__== "__main__":
     get_ipython().system('jupyter-nbconvert --to script hamiltonian.ipynb')
 
 
-# # Hamiltonian methods
+# <h2> <font size=6> <b>Matrix methods</b></font> </h2>
+# Methods to deal with matrices explicitly<br>
+# 
+# <code>bonds_to_matrix(self, bonds, offsets, flag)</code> Builds a matrix given its bonds. This is used to generate the Hamiltonians and velocity operators<br>
+# 
+# <code>get_H0(self)</code> Builds the unperturbed Hamiltonian <code>H0</code> matrix using the model's parameters (without potential ramp) and store it in the object as <code>self.H0</code>. This is used to generate the Fermi operator<br>
+# 
+# <code>get_H(self)</code> Builds the full Hamiltonian matrix <code>H</code> using the model's parameters (including potential ramp) and store in the object as <code>self.H</code>. This is used to generate the time evolution operator<br>
+# 
+# <code>diag_H(self)</code> Diagonalizes <code>H</code> and stores the eigenvalues as <code>self.vals</code>, the matrix of change of basis as <code>self.vecs</code> and its inverse as <code>self.P</code><br>
+# 
+# <code>diag_H0(self)</code> Diagonalizes <code>H0</code> and stores the eigenvalues as <code>self.vals0</code>, the matrix of change of basis as <code>self.vecs0</code> and its inverse as <code>self.P0</code><br>
+# 
+# <code>get_element(self, bonds, offsets, left, right)</code> Fetch a matrix element from a matrix $M$ without having to compute the full matrix explicitly. The matrix element is <left| M |right>
 
-# In[3]:
+# In[1]:
 
 
 def bonds_to_matrix(self, bonds, offsets, flag):
@@ -152,9 +165,12 @@ def get_element(self, bonds, offsets, left, right):
     return element
 
 
-# # Hamiltonian KPM methods
+# <h2> <font size=6> <b>Matrix KPM methods</b></font> </h2>
+# Methods to act on a vector with a matrix when the matrix is defined only using its bonds. This does <b>not</b> have periodic boundary conditions<br>
+# 
+# <code>mult_HV_bonds(self, new, temp, hams, offsets, factor,flag)</code> multiples the vector<code>temp</code> by the matrix $M$ defined by its bonds (<code>hams</code> and <code>offsets</code>) and stores the result into <code>new</code>
 
-# In[4]:
+# In[2]:
 
 
 
@@ -182,7 +198,7 @@ def mult_HV_bonds(self, new, temp, hams, offsets, factor,flag):
         # Difference of the atoms' positions
         diff = self.orb_pos[b2] - self.orb_pos[b1] + ox*self.primitives[0] + oy*self.primitives[1]
         
-        dv = -99999 # Stupid number so that the program really breaks 
+        dv = -99999 # Stupid number so that the program really breaks if it's wrongly used
         
         if flag == 0:
             dv = 1
@@ -241,7 +257,7 @@ def mult_Vb(self, new, temp):
 
 
 # # New Hamiltonian
-# Generalized for PBC and time-dependency
+# Generalized for PBC and time-dependency <code>hamiltonian_g(self, write, read, hams, offsets, factors)</code>
 
 # In[5]:
 
@@ -249,16 +265,13 @@ def mult_Vb(self, new, temp):
 
             
 def hamiltonian_g(self, write, read, hams, offsets, factors):
-    """ Efficient implementation of the product by the Hamiltonian 
-    """    
+    """ Efficient implementation of the product by the Hamiltonian """    
     
-    if self.DEBUG:
-        print(f"entered hamiltonian_g {factor=} {flag=}")
+    if self.DEBUG: print(f"entered hamiltonian_g {factor=} {flag=}")
     
     Lx,Ly,No = self.Lx, self.Ly, self.Norb
     NB = len(offsets)
     if len(factors) != NB: print("hamiltonian_g: number of factors must be equal to number of bonds")
-        
     
     for i in range(NB):
         dx,dy,b1,b2 = offsets[i]
@@ -274,11 +287,6 @@ def hamiltonian_g(self, write, read, hams, offsets, factors):
         end2x = start2x + Lx - abs(dx) 
         end1y = start1y + Ly - abs(dy) 
         end2y = start2y + Ly - abs(dy)
-        # print("bond",i)
-        # print(start1x, end1x)
-        # print(start2x, end2x)
-        # print(start1y, end1y)
-        # print(start2y, end2y)
         
         # Bulk multiplication (works for PBC and OBC)
         write[start1x:end1x,start1y:end1y,b2] += factors[i]*hams[i][start2x:end2x,start2y:end2y]*read[start2x:end2x,start2y:end2y,b1]
@@ -355,6 +363,8 @@ def hamiltonian_g(self, write, read, hams, offsets, factors):
     if self.DEBUG: print("left hamiltonian_g")
  
 
+
+# # other
 
 # In[ ]:
 
